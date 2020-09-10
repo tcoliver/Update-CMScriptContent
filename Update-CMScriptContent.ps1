@@ -200,6 +200,7 @@ PROCESS {
         $Activity = "Writing changes to files"
         $Status = "'$($SearchStrings -join "' and '")' -> '$ReplaceString'"
         $Count = 0
+        $FilesWithStringReplaced = New-Object -TypeName System.Collections.ArrayList
         
         try {
             Write-Host "INFO:  Getting application with content from Endpoint Manager"
@@ -225,26 +226,41 @@ PROCESS {
         foreach ($App in $CMAppList) {
             foreach ($DepType in $App.DeploymentTypes){
                 $MatchedFiles = @()
+                $NeedsRedist = $false
                 foreach ($ContentLocation in $DepType.ContentLocations) {
                     $MatchedFiles += $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentLocation }
                 }
-                $MatchedFiles | ForEach-Object { $FilesWithString.Remove($_) }
                 if ($MatchedFiles) {
+                    $NeedsRedist = $true
                     foreach ($File in $MatchedFiles) {
                         Write-Progress -Activity $Activity -Status $Status -CurrentOperation "$($App.Name)" -PercentComplete ((++$Count / $FilesWithStringCount) * 100)
                         $Success = Update-FileContent -File $File -SearchExp $SearchExp -ReplaceString $ReplaceString
-                        if (-Not $Success) { $ErrorCount++ }
+                        if ($Success) { 
+                            $FilesWithString.Remove($File) | Out-Null
+                            $FilesWithStringReplaced.Add($File) | Out-Null 
+                        } else { 
+                            $ErrorCount++ 
+                        }
                     }
+                } else {
+                    foreach ($ContentLocation in $DepType.ContentLocations) {
+                        if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentLocation }) {
+                            $NeedsRedist = $true
+                        }
+                    }
+                }
+                if ($NeedsRedist) {
                     Write-Host "INFO:  '$($App.Name):$($DepType.Name)' needs distribution point update"
                     try {
                         Set-Location "$($SiteCode):\"
                         Update-CMDistributionPoint -ApplicationName "$($App.Name)" -DeploymentTypeName "$($DepType.Name)" -ErrorAction "Stop"
-                        Write-Host "INFO:  Started distribution point update for $($App.Name):$($DepType.Name)"
+                        Write-Host "INFO:  Successfully started distribution point update for '$($App.Name):$($DepType.Name)'"
                     } catch {
                         $ErrorCount++
-                        Write-Host "ERROR: Failed to start distribution point update for $($App.Name):$($DepType.Name)" -ForegroundColor "Red"
+                        Write-Host "ERROR: Failed to start distribution point update for '$($App.Name):$($DepType.Name)'" -ForegroundColor "Red"
                     } finally {
                         Set-Location $OriginalLocation.Path
+
                     }
                 }
             }
@@ -259,19 +275,31 @@ PROCESS {
         Write-Host "INFO:  Starting replacement for package affiliated files"
         $ErrorCount = 0 
         foreach ($Pkg in $CMPkgList) {
+            $NeedsRedist = $false
             $MatchedFiles = $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentLocation }
-            $MatchedFiles | ForEach-Object { $FilesWithString.Remove($_) }
             if ($MatchedFiles) {
+                $NeedsRedist = $true
                 foreach ($File in $MatchedFiles) {
                     Write-Progress -Activity $Activity -Status $Status -CurrentOperation "$($Pkg.Name)" -PercentComplete ((++$Count / $FilesWithStringCount) * 100)
                     $Success = Update-FileContent -File $File -SearchExp $SearchExp -ReplaceString $ReplaceString
-                    if (-Not $Success) { $ErrorCount++ }
+                    if ($Success) { 
+                        $FilesWithString.Remove($File) | Out-Null
+                        $FilesWithStringReplaced.Add($File) | Out-Null 
+                    } else { 
+                        $ErrorCount++ 
+                    }
                 }
+            } else {
+                if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentLocation }) {
+                    $NeedsRedist = $true
+                }
+            }
+            if ($NeedsRedist) {
                 Write-Host "INFO:  '$($Pkg.Name)' needs distribution point update"
                 try{
                     Set-Location "$($SiteCode):\"
                     Update-CMDistributionPoint -PackageName "$($Pkg.Name)" -ErrorAction "Stop"
-                    Write-Host "INFO:  Started distribution point update for $($Pkg.Name)" -ForegroundColor Green
+                    Write-Host "INFO:  Successfully started distribution point update for '$($Pkg.Name)'" -ForegroundColor Green
                 } catch {
                     $ErrorCount++
                     Write-Host "ERROR: Failed to start distribution point update for $($Pkg.Name)" -ForegroundColor "Red"

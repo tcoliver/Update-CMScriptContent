@@ -88,7 +88,7 @@ function Get-CMPackageContentPaths {
             $PkgInfo = New-Object -TypeName PSObject
             $PkgInfo | Add-Member -MemberType NoteProperty -Name "Name" -Value $Package.Name
             $PkgInfo | Add-Member -MemberType NoteProperty -Name "Id" -Value $Package.PackageID
-            if ($null -ne $Package.PkgSourcePath) {
+            if ($Package.PkgSourcePath) {
                 $PkgInfo | Add-Member -MemberType NoteProperty -Name "ContentLocation" -Value $Package.PkgSourcePath
             }
             else {

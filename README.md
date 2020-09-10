@@ -2,6 +2,24 @@
 
 Finds and replaces the content in text-based files and redistributes any referencing Configuration Manager Applications and Packages. 
 
+## Installation
+
+Simply download the zip or clone the repository
+
+```
+git clone https://github.com/tcoliver/Update-CMScriptContent.git
+cd Update-CMScriptContent
+```
+
+The script depends on the *Get-CMContentLocations* module in the modules directory, so at minimum ensure your file structure includes:
+
+```
+Update-CMScriptContent/
+├── Update-CMScriptContent.ps1
+└── modules/
+    └── Get-CMContentPaths.psm1
+```
+
 ## Usage
 
 Search Only
@@ -20,6 +38,8 @@ Search and Replace
   -SiteServer "mecmsiteserver.example.com" `
   -SiteCode "S01"
 ```
+
+The script will create a log file at the current directory when run.
 
 ## Features
 

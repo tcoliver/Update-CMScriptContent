@@ -39,9 +39,9 @@ function Get-CMApplicationContentPaths {
                 foreach ($DeploymentType in $AppInfo.XML.DeploymentTypes) {
                     $DepType = New-Object -TypeName psobject
                     $DepType | Add-Member -MemberType NoteProperty -Name "Name" -Value $DeploymentType.Title
-                    $DepType | Add-Member -MemberType NoteProperty -Name "ContentLocations" -Value (New-Object System.Collections.ArrayList)
+                    $DepType | Add-Member -MemberType NoteProperty -Name "ContentPaths" -Value (New-Object System.Collections.ArrayList)
                     foreach($loc in $DeploymentType.Installer.Contents) {
-                        $DepType.ContentLocations.Add($loc.Location) | Out-Null
+                        $DepType.ContentPaths.Add($loc.Location) | Out-Null
                     }
                     $AppInfo.DeploymentTypes.Add($DepType) | Out-Null
                 }
@@ -89,7 +89,7 @@ function Get-CMPackageContentPaths {
             $PkgInfo | Add-Member -MemberType NoteProperty -Name "Name" -Value $Package.Name
             $PkgInfo | Add-Member -MemberType NoteProperty -Name "Id" -Value $Package.PackageID
             if ($Package.PkgSourcePath) {
-                $PkgInfo | Add-Member -MemberType NoteProperty -Name "ContentLocation" -Value $Package.PkgSourcePath
+                $PkgInfo | Add-Member -MemberType NoteProperty -Name "ContentPath" -Value $Package.PkgSourcePath
             }
             else {
                 continue

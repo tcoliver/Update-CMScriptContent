@@ -233,8 +233,8 @@ PROCESS {
             foreach ($DepType in $App.DeploymentTypes){
                 $MatchedFiles = @()
                 $NeedsRedist = $false
-                foreach ($ContentLocation in $DepType.ContentLocations) {
-                    $MatchedFiles += $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentLocation }
+                foreach ($ContentPath in $DepType.ContentPaths) {
+                    $MatchedFiles += $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentPath }
                 }
                 if ($MatchedFiles) {
                     $NeedsRedist = $true
@@ -249,8 +249,8 @@ PROCESS {
                         }
                     }
                 } else {
-                    foreach ($ContentLocation in $DepType.ContentLocations) {
-                        if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentLocation }) {
+                    foreach ($ContentPath in $DepType.ContentPaths) {
+                        if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $ContentPath }) {
                             $NeedsRedist = $true
                         }
                     }
@@ -282,7 +282,7 @@ PROCESS {
         $ErrorCount = 0 
         foreach ($Pkg in $CMPkgList) {
             $NeedsRedist = $false
-            $MatchedFiles = $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentLocation }
+            $MatchedFiles = $FilesWithString | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentPath }
             if ($MatchedFiles) {
                 $NeedsRedist = $true
                 foreach ($File in $MatchedFiles) {
@@ -296,7 +296,7 @@ PROCESS {
                     }
                 }
             } else {
-                if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentLocation }) {
+                if ($FilesWithStringReplaced | Where-Object { Get-IsPathPart -FilePath $_.FullName -PathPart $Pkg.ContentPath }) {
                     $NeedsRedist = $true
                 }
             }

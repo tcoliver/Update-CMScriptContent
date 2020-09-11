@@ -7,7 +7,7 @@ Finds and replaces the content in text-based files and redistributes any referen
 Simply download the zip or clone the repository
 
 ```
-git clone --recursive https://github.com/tcoliver/Update-CMScriptContent.git
+git clone --recurse-submodules https://github.com/tcoliver/Update-CMScriptContent.git
 cd Update-CMScriptContent
 ```
 

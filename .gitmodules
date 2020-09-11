@@ -1,0 +1,3 @@
+[submodule "Get-CMContentPaths"]
+	path = Get-CMContentPaths
+	url = https://github.com/tcoliver/Get-CMContentPaths.git

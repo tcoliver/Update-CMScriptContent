@@ -110,9 +110,9 @@ BEGIN {
     Start-Transcript -Path $TranscriptPath
 
     ########################### Import dependancies ############################
-    $LocalModulePath = "$PSScriptRoot\modules"
+
     try {
-        Import-Module "$LocalModulePath\Get-CMContentPaths.psm1" -ErrorAction Stop
+        Import-Module "$PSScriptRoot\Get-CMContentPaths\Get-CMContentPaths.psm1" -ErrorAction Stop
     } catch {
         Write-Host "ERROR: Failed to import dependancies. Exiting." -ForegroundColor "Red"
         Stop-Transcript

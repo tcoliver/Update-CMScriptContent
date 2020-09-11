@@ -40,10 +40,20 @@ param (
     # Path to save transcript
     [Parameter()]
     [string]
-    $TranscriptPath = "./UpdateCMScriptContent.log"
+    $TranscriptPath = "./UpdateCMScriptContent.log",
+
+    # Extension for the backup files
+    [Parameter(ParameterSetName = "Replace")]
+    [string]
+    $BackupExtension = "sr_bkp"
 )
 
 BEGIN {
+    ############################### Setup Search ###############################
+    $BackupExtension = $BackupExtension -replace "^\.?", "."
+    $Include = $Include | ForEach-Object { $_ -replace "^\.?", "." }
+    $SearchExp = "(" + (($SearchStrings | ForEach-Object { [regex]::Escape($_) }) -join "|") + ")"
+
     function Get-IsPathPart {
         param (
             [Parameter(Position=0)]
@@ -79,7 +89,7 @@ BEGIN {
             $ReplaceString
         )
         try {
-            Copy-Item -Path $File.PSPath -Destination "$($FILE.PSPath).bkp" -ErrorAction "Stop" | Out-Null
+            Copy-Item -Path $File.PSPath -Destination "$($FILE.PSPath)$BackupExtension" -ErrorAction "Stop" | Out-Null
         } catch {
             Write-Host "ERROR: Failed to backup '$($File.FullName)'. Skipping." -ForegroundColor "Red"
             return $false
@@ -123,10 +133,6 @@ Replace String:   '$ReplaceString'.
             exit 0
         }
     }
-
-    ############################### Setup Search ###############################
-    $Include = $Include | ForEach-Object { $_ -replace "^\.?", "." }
-    $SearchExp = "(" + (($SearchStrings | ForEach-Object { [regex]::Escape($_) }) -join "|") + ")"
 
     ####################### Mount Endpoint Manager site ########################
     if ($ReplaceString) {
